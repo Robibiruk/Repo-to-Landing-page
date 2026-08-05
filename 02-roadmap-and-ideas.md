@@ -18,6 +18,8 @@ instantly marketable. The landing page is the output; the share loop is the prod
 - [x] Download ZIP (works offline, zero auth)
 - [x] Deploy = stubbed interface
 - [x] `LLMProvider` seam: OpenRouter (default) + Mock (no-key dev)
+- [x] **Critic/quality-gate pass** — copy is scored (truthfulness/specificity/hook/…) and driven through a targeted rewrite when weak (bounded `MAX_REFINE_ROUNDS`)
+- [x] **Free-model A/B** (2026-08-05) — winner: `nvidia/nemotron-3-super-120b-a12b:free`; fallbacks `poolside/laguna-s-2.1`, `google/gemma-4-31b-it`; provider retries + walks the chain on 429/upstream errors
 
 ---
 

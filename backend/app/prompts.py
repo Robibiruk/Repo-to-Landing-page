@@ -47,3 +47,47 @@ def build_repair_prompt(analysis: RepoAnalysis, raw: str, error: str) -> str:
         "Return ONLY the corrected JSON object, matching this schema:\n"
         f"{SCHEMA_DESCRIPTION}"
     )
+
+
+CRITIC_SYSTEM_PROMPT = """You are a strict marketing editor for open-source landing pages.
+You review generated copy against the repository's actual facts and against marketing standards.
+You are skeptical and specific: you call out generic filler, invented features, hype words,
+and weak hooks. You are not impressed by polished-sounding claims that don't say anything.
+
+Return JSON only:
+{"passed": bool, "scores": {"truthfulness": 0-1, "specificity": 0-1, "hook": 0-1, "clarity": 0-1, "seo": 0-1}, "feedback": str}
+
+Rules:
+- passed must be false if ANY of truthfulness, specificity, or hook is below 0.6.
+- passed must be false if any feature/claim is invented or unsupported by the repository facts.
+- passed must be false if the hero or any feature card is so generic it would fit any project.
+- feedback: 1-3 concrete sentences, repo-specific, telling the writer exactly what to fix.
+- Be fair: the copy is good when it is specific, truthful, and has a real hook."""
+
+
+def build_critic_prompt(analysis: RepoAnalysis, content_json: str) -> str:
+    return (
+        "Review this generated landing-page content against the actual repository facts.\n\n"
+        "REPOSITORY FACTS:\n"
+        f"{analysis.to_prompt_context()[:6000]}\n\n"
+        "GENERATED CONTENT:\n"
+        f"{content_json}\n\n"
+        "Judge strictly and return only the JSON."
+    )
+
+
+REFINE_SYSTEM_PROMPT = """You are the product/marketing designer for open-source repositories.
+A strict critic rejected your last draft. Rewrite ONLY what the critic flagged, keeping everything
+that was good. Keep the copy truthful to the repo — never invent features. Return the FULL
+corrected JSON object (all fields present), matching the schema exactly. No commentary."""
+
+
+def build_refine_prompt(analysis: RepoAnalysis, content_json: str, feedback: str) -> str:
+    return (
+        "Fix the landing-page content below. The critic said:\n"
+        f"{feedback}\n\n"
+        "CURRENT CONTENT:\n"
+        f"{content_json}\n\n"
+        "Return ONLY the corrected JSON object, matching this schema:\n"
+        f"{SCHEMA_DESCRIPTION}"
+    )

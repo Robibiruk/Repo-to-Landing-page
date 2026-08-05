@@ -31,14 +31,24 @@ def _count(n: int) -> str:
     return str(n)
 
 
-def render_landing(analysis: RepoAnalysis, content: LandingContent, theme_id: str = "developer") -> str:
+def render_landing(
+    analysis: RepoAnalysis,
+    content: LandingContent,
+    theme_id: str = "developer",
+    repopages_url: str = "",
+) -> str:
     theme = get_theme(theme_id)
     repo_url = f"https://github.com/{analysis.owner}/{analysis.repo}"
     accent = content.brand.accent or analysis.accent_color
     ga, gb = content.brand.gradientFrom or accent, content.brand.gradientTo or "#22d3ee"
 
     vars_css = "\n".join(f"{k}:{v};" for k, v in theme.vars.items())
-    vars_css += f"\n--accent:{esc(accent, quote=True)};--grad-a:{esc(ga, quote=True)};--grad-b:{esc(gb, quote=True)};--font:{theme.font};"
+    # A theme may pin its own accent/gradient (e.g. GitHub blue, Stripe purple); otherwise
+    # fall back to the brand accent derived from the repo.
+    for var, val in (("--accent", accent), ("--grad-a", ga), ("--grad-b", gb)):
+        if var not in theme.vars:
+            vars_css += f"{var}:{esc(val, quote=True)};"
+    vars_css += f"--font:{theme.font};"
     css = f":root{{{vars_css}}}\n{BASE_CSS}\n{theme.extra_css}"
 
     brand_name = content.brand.name or analysis.display_name
@@ -94,6 +104,13 @@ def render_landing(analysis: RepoAnalysis, content: LandingContent, theme_id: st
         f'<a href="{esc(l.url, quote=True)}">{esc(l.label)}</a>' for l in content.footer.links[:5]
     )
     cta_target = analysis.homepage or repo_url
+    if repopages_url:
+        badge_html = (
+            f'<a class="badge" href="{esc(repopages_url, quote=True)}" target="_blank" rel="noopener">'
+            '⚡ Built with <b>RepoPages</b></a>'
+        )
+    else:
+        badge_html = '<span class="badge">⚡ Built with <b>RepoPages</b></span>'
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -142,7 +159,7 @@ def render_landing(analysis: RepoAnalysis, content: LandingContent, theme_id: st
 <footer><div class="wrap foot">
   <div>© {esc(brand_name)} · {esc(analysis.license_name or content.footer.license)}</div>
   <div class="foot-links">{foot_links}</div>
-  <span class="badge">⚡ Built with <b>RepoPages</b></span>
+  {badge_html}
 </div></footer>
 </body>
 </html>"""

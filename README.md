@@ -63,4 +63,5 @@ frontend/src/         React app: api client, types, App + components
 | `OPENROUTER_FALLBACK_MODELS` | Comma-separated free-model fallbacks for 429 rate limits |
 | `QUALITY_GATE` | `true` (default) — critic scores copy and drives a targeted rewrite |
 | `MAX_REFINE_ROUNDS` | `1` (default) — bounds refine latency on the free tier |
+| `REPOPAGES_URL` | Where the "Built with RepoPages" badge links (empty = not a link) |
 | `LLM_PROVIDER` | `openrouter` (default) or `mock` |

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-THEME_IDS = ["developer", "minimal", "terminal", "startup"]
+THEME_IDS = ["developer", "minimal", "terminal", "startup", "apple", "stripe", "linear", "github", "glass"]
 
 
 @dataclass
@@ -102,6 +102,66 @@ THEMES: dict[str, Theme] = {
             "--muted": "#9a9ab0", "--border": "#262636", "--radius": "14px",
         },
         extra_css="h1{background:linear-gradient(135deg,var(--grad-a),var(--grad-b));-webkit-background-clip:text;background-clip:text;color:transparent}.btn{border-radius:999px}",
+    ),
+    "apple": Theme(
+        id="apple",
+        label="Apple",
+        font='-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif',
+        vars={
+            "--bg": "#ffffff", "--surface": "#ffffff", "--text": "#1d1d1f",
+            "--muted": "#86868b", "--border": "#e8e8ed", "--radius": "18px",
+            "--accent": "#0071e3", "--grad-a": "#0071e3", "--grad-b": "#2997ff",
+        },
+        extra_css="h1{letter-spacing:-.03em;font-weight:700}section h2{letter-spacing:-.02em}.btn.primary{border-radius:980px}.badge{border-radius:980px}",
+    ),
+    "stripe": Theme(
+        id="stripe",
+        label="Stripe",
+        font='Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+        vars={
+            "--bg": "#ffffff", "--surface": "#ffffff", "--text": "#1a1f36",
+            "--muted": "#697386", "--border": "#e6ebf1", "--radius": "10px",
+            "--accent": "#635bff", "--grad-a": "#635bff", "--grad-b": "#00d4ff",
+        },
+        extra_css=".card{box-shadow:0 1px 2px rgba(18,25,45,.06),0 6px 24px rgba(18,25,45,.06)}.btn.primary{box-shadow:0 2px 8px rgba(99,91,255,.4)}",
+    ),
+    "linear": Theme(
+        id="linear",
+        label="Linear",
+        font='Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+        vars={
+            "--bg": "#0d0d12", "--surface": "#17171f", "--text": "#f7f8f8",
+            "--muted": "#8b8d98", "--border": "#26262f", "--radius": "8px",
+            "--accent": "#5e6ad2", "--grad-a": "#5e6ad2", "--grad-b": "#8b5cf6",
+        },
+        extra_css=".card{background:linear-gradient(180deg,#17171f,#15151c)}.logo-mark{border-radius:6px}",
+    ),
+    "github": Theme(
+        id="github",
+        label="GitHub",
+        font='-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif',
+        vars={
+            "--bg": "#ffffff", "--surface": "#ffffff", "--text": "#1f2328",
+            "--muted": "#59636e", "--border": "#d1d9e0", "--radius": "6px",
+            "--accent": "#0969da", "--grad-a": "#0969da", "--grad-b": "#1f883d",
+        },
+        extra_css=".card{box-shadow:0 1px 0 rgba(31,35,40,.04)}.btn{font-weight:600}",
+    ),
+    "glass": Theme(
+        id="glass",
+        label="Glassmorphism",
+        font="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+        vars={
+            "--bg": "#f5f5ff", "--surface": "rgba(255,255,255,.55)", "--text": "#1a1a2e",
+            "--muted": "#5a5a76", "--border": "rgba(255,255,255,.6)", "--radius": "16px",
+        },
+        extra_css=(
+            "body{background:radial-gradient(at 20% 10%,rgba(99,102,241,.20),transparent 50%),"
+            "radial-gradient(at 80% 20%,rgba(34,211,238,.18),transparent 50%),"
+            "radial-gradient(at 50% 100%,rgba(244,114,182,.14),transparent 55%),#f5f5ff}"
+            ".card{backdrop-filter:blur(14px);box-shadow:0 8px 32px rgba(31,38,135,.10)}"
+            ".btn{backdrop-filter:blur(8px)}"
+        ),
     ),
 }
 

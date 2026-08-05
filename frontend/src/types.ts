@@ -78,6 +78,14 @@ export interface PreviewResponse {
   theme: string
 }
 
+export interface RewriteResponse {
+  html: string
+  content: LandingContent
+  block_text: string
+}
+
+export type Tone = "professional" | "funny" | "startup" | "developer" | "concise" | "inspiring"
+
 export interface ThemeInfo {
   id: string
   label: string

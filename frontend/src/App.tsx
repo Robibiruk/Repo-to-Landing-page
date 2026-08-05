@@ -5,10 +5,11 @@ import { generate, getThemes, preview } from "./api"
 import { ActionBar } from "./components/ActionBar"
 import { PipelineSteps } from "./components/PipelineSteps"
 import { PreviewFrame } from "./components/PreviewFrame"
+import { RewritePanel } from "./components/RewritePanel"
 import { ThemePicker } from "./components/ThemePicker"
 import { UrlForm } from "./components/UrlForm"
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card"
-import type { GenerateResponse, PipelineStep, ThemeInfo } from "./types"
+import type { GenerateResponse, LandingContent, PipelineStep, ThemeInfo } from "./types"
 
 const HOW_IT_WORKS = [
   {
@@ -66,6 +67,10 @@ export default function App() {
       setError(e instanceof Error ? e.message : "Something went wrong")
       setStep("error")
     }
+  }
+
+  const handleRewritten = (html: string, content: LandingContent) => {
+    setResult((prev) => (prev ? { ...prev, html, content } : prev))
   }
 
   const handleTheme = async (id: string) => {
@@ -142,6 +147,13 @@ export default function App() {
               disabled={refreshing}
             />
             <PreviewFrame html={result.html} repoName={result.repo.full_name} />
+            <RewritePanel
+              content={result.content}
+              contentId={result.content_id}
+              theme={result.theme}
+              disabled={refreshing}
+              onRewritten={handleRewritten}
+            />
           </section>
         )}
 

@@ -11,8 +11,16 @@ class Settings(BaseSettings):
     # is higher, but for an MVP the free tier is the right default.
     openrouter_model: str = "nvidia/nemotron-3-super-120b-a12b:free"
     # Comma-separated free-model fallbacks for when the primary is rate-limited (429).
-    openrouter_fallback_models: str = "google/gemma-4-31b-it:free,poolside/laguna-s-2.1:free"
+    # A/B'd 2026-08-05: nemotron passes the critic; poolside is reliable but weak; gemma 429s.
+    openrouter_fallback_models: str = "poolside/laguna-s-2.1:free,google/gemma-4-31b-it:free"
     llm_provider: str = "openrouter"
+    # Share-loop badge target: where "Built with RepoPages" links. Empty = badge is not a link.
+    # Set to the product/gallery URL once live (today: the project's GitHub repo).
+    repopages_url: str = ""
+    # Quality gate: after generation, a critic scores the copy and drives a targeted rewrite.
+    quality_gate: bool = True
+    # Max targeted refine rounds after a failed critique (bounds latency/cost on the free tier).
+    max_refine_rounds: int = 1
     github_api_base: str = "https://api.github.com"
 
 

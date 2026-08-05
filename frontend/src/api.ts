@@ -1,4 +1,4 @@
-import type { GenerateResponse, PreviewResponse, ThemeInfo } from "./types"
+import type { GenerateResponse, PreviewResponse, RewriteResponse, ThemeInfo } from "./types"
 
 const BASE = "/api"
 
@@ -32,6 +32,27 @@ export async function preview(contentId: string, theme: string): Promise<Preview
     body: JSON.stringify({ content_id: contentId, theme }),
   })
   return read<PreviewResponse>(res)
+}
+
+export async function rewrite(
+  contentId: string,
+  blockType: string,
+  index: number,
+  tone: string,
+  theme: string,
+): Promise<RewriteResponse> {
+  const res = await fetch(`${BASE}/rewrite`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content_id: contentId,
+      block_type: blockType,
+      index,
+      tone,
+      theme,
+    }),
+  })
+  return read<RewriteResponse>(res)
 }
 
 export function exportUrl(contentId: string, theme: string): string {

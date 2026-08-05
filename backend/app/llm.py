@@ -77,6 +77,13 @@ class OpenRouterProvider:
             if resp.status_code >= 400:
                 raise LLMError(f"OpenRouter error {resp.status_code} for {model}: {resp.text[:500]}")
             data = resp.json()
+        # OpenRouter sometimes returns HTTP 200 with an error body (upstream provider failure).
+        if isinstance(data, dict) and data.get("error"):
+            message = str(data["error"].get("message", ""))[:200].lower()
+            transient = any(k in message for k in ("exhausted", "rate", "upstream", "timeout", "temporar", "overloaded"))
+            if transient:
+                raise _Retryable(f"OpenRouter upstream error for {model}: {str(data['error'])[:300]}")
+            raise LLMError(f"OpenRouter error for {model}: {str(data['error'])[:300]}")
         try:
             return data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:

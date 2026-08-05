@@ -12,6 +12,7 @@ from .github_client import GitHubClient, RepoNotFound, parse_repo_url
 from .llm import LLMError
 from .render import render_landing
 from .repo_analysis import RepoAnalysis, analyze_repo
+from .rewrite import TONES, rewrite_block
 from .schemas import LandingContent
 from .themes import THEMES
 from .zip_export import build_zip
@@ -39,6 +40,14 @@ class GenerateRequest(BaseModel):
 
 class PreviewRequest(BaseModel):
     content_id: str
+    theme: str = Field(default="developer")
+
+
+class RewriteRequest(BaseModel):
+    content_id: str
+    block_type: str
+    index: int = Field(default=0)
+    tone: str = Field(default="professional")
     theme: str = Field(default="developer")
 
 
@@ -91,7 +100,11 @@ async def generate(req: GenerateRequest):
     client = GitHubClient(token=settings.github_token)
     try:
         analysis = await analyze_repo(client, owner, repo)
-        content = await generate_content(analysis)
+        content = await generate_content(
+            analysis,
+            quality_gate=settings.quality_gate,
+            max_refine_rounds=settings.max_refine_rounds,
+        )
     except RepoNotFound as exc:
         raise HTTPException(status_code=404, detail=f"Repository not found: {exc.path}")
     except (LLMError, Exception) as exc:
@@ -101,7 +114,7 @@ async def generate(req: GenerateRequest):
 
     content_id = uuid.uuid4().hex[:12]
     theme = req.theme if req.theme in THEMES else "developer"
-    html = render_landing(analysis, content, theme)
+    html = render_landing(analysis, content, theme, settings.repopages_url)
     _cache_put(_CONTENT, content_id, {"analysis": analysis, "content": content})
     _cache_put(_HTML, (content_id, theme), html)
 
@@ -122,9 +135,29 @@ async def preview(req: PreviewRequest):
     theme = req.theme if req.theme in THEMES else "developer"
     html = _cache_get(_HTML, (req.content_id, theme))
     if html is None:
-        html = render_landing(entry["analysis"], entry["content"], theme)
+        html = render_landing(entry["analysis"], entry["content"], theme, settings.repopages_url)
         _cache_put(_HTML, (req.content_id, theme), html)
     return {"html": html, "theme": theme}
+
+
+@app.post("/api/rewrite")
+async def rewrite(req: RewriteRequest):
+    entry = _cache_get(_CONTENT, req.content_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="No generated content for this id. Generate first.")
+    if req.tone not in TONES:
+        raise HTTPException(status_code=422, detail=f"Unknown tone. Choose from: {', '.join(TONES)}")
+    try:
+        content, block_text = await rewrite_block(
+            entry["analysis"], entry["content"], req.block_type, req.index, req.tone
+        )
+    except LLMError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+    entry["content"] = content
+    theme = req.theme if req.theme in THEMES else "developer"
+    html = render_landing(entry["analysis"], content, theme, settings.repopages_url)
+    _cache_put(_HTML, (req.content_id, theme), html)
+    return {"html": html, "content": content.model_dump(), "block_text": block_text}
 
 
 @app.get("/api/export")
@@ -135,7 +168,7 @@ async def export(content_id: str, theme: str = "developer"):
     theme = theme if theme in THEMES else "developer"
     html = _cache_get(_HTML, (content_id, theme))
     if html is None:
-        html = render_landing(entry["analysis"], entry["content"], theme)
+        html = render_landing(entry["analysis"], entry["content"], theme, settings.repopages_url)
         _cache_put(_HTML, (content_id, theme), html)
     zip_bytes = build_zip(html)
     name = entry["analysis"].repo or "repopages"

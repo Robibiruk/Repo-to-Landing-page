@@ -53,3 +53,11 @@ class LandingContent(BaseModel):
     sections: list[str] = Field(default_factory=list, description="Extra section types: examples, roadmap, pricing, faq, stats, team")
     footer: Footer = Footer()
     seo: Seo
+
+
+class Critique(BaseModel):
+    """Output of the quality-gate pass: does the copy pass, and what to fix?"""
+
+    passed: bool
+    scores: dict[str, float] = Field(default_factory=dict)
+    feedback: str
