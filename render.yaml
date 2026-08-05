@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: repopages-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_MODEL
+        value: nvidia/nemotron-3-super-120b-a12b:free
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: poolside/laguna-s-2.1:free,google/gemma-4-31b-it:free
+      - key: CORS_ORIGINS
+        sync: false
+      - key: QUALITY_GATE
+        value: "true"
+      - key: MAX_REFINE_ROUNDS
+        value: "1"
+    healthCheckPath: /api/health

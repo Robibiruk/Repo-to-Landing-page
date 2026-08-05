@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from "react"
 import {
   Brain,
+  Code2,
   LayoutGrid,
   Rocket,
+  Shield,
+  Sparkles,
+  Zap,
 } from "lucide-react"
 
 import { generate, getThemes, preview } from "./api"
 import { ActionBar } from "./components/ActionBar"
 import Lightfall from "./components/Lightfall"
+import LogoLoop from "./components/LogoLoop"
 import { PipelineSteps } from "./components/PipelineSteps"
 import { RewritePanel } from "./components/RewritePanel"
 import { ThemePicker } from "./components/ThemePicker"
@@ -32,11 +37,15 @@ const FEATURES = [
   },
 ]
 
-const TRUSTED_BY = [
-  { name: "OpenSource", icon: Rocket },
-  { name: "HackathonPro", icon: Rocket },
-  { name: "API Builders", icon: LayoutGrid },
-  { name: "DevTools Inc", icon: Brain },
+const TECH_LOGOS: { node: React.ReactNode; title: string }[] = [
+  { node: <Code2 className="size-6 text-muted-foreground/60" />, title: "React" },
+  { node: <Sparkles className="size-6 text-muted-foreground/60" />, title: "Next.js" },
+  { node: <Zap className="size-6 text-muted-foreground/60" />, title: "TypeScript" },
+  { node: <LayoutGrid className="size-6 text-muted-foreground/60" />, title: "Tailwind" },
+  { node: <Shield className="size-6 text-muted-foreground/60" />, title: "Vue" },
+  { node: <Brain className="size-6 text-muted-foreground/60" />, title: "Python" },
+  { node: <Rocket className="size-6 text-muted-foreground/60" />, title: "Docker" },
+  { node: <Code2 className="size-6 text-muted-foreground/60" />, title: "Rust" },
 ]
 
 const FOOTER_LINKS = [
@@ -254,18 +263,21 @@ export default function App() {
       )}
 
       {/* ——— TRUSTED BY ——— */}
-      <section className="fade-up border-y border-border/40 bg-card/50 py-12 text-center">
+      <section className="fade-up border-y border-border/40 bg-card/50 py-10 text-center">
         <p className="mb-6 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
           Trusted by hackathons & indie hackers
         </p>
-        <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-8 text-sm font-semibold text-muted-foreground">
-          {TRUSTED_BY.map((t) => (
-            <div key={t.name} className="flex items-center gap-2 opacity-50 grayscale transition hover:opacity-100 hover:grayscale-0">
-              <t.icon className="size-4" />
-              {t.name}
-            </div>
-          ))}
-        </div>
+        <LogoLoop
+          logos={TECH_LOGOS}
+          speed={80}
+          direction="left"
+          logoHeight={32}
+          gap={48}
+          pauseOnHover
+          fadeOut
+          fadeOutColor="#020617"
+          className="mx-auto max-w-4xl"
+        />
       </section>
 
       {/* ——— FEATURES ——— */}
