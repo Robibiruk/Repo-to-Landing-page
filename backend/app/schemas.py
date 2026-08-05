@@ -59,5 +59,5 @@ class Critique(BaseModel):
     """Output of the quality-gate pass: does the copy pass, and what to fix?"""
 
     passed: bool
-    scores: dict[str, float] = Field(default_factory=dict)
+    scores: dict[str, float] = Field(default_factory=dict, description="user_benefit, specificity, hook, clarity, no_devdoc — 0-1 each")
     feedback: str

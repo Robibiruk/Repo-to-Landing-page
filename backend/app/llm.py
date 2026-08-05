@@ -101,30 +101,30 @@ class MockProvider:
         sample = {
             "brand": {
                 "name": name,
-                "tagline": "Ship it. Show it. Grow it.",
+                "tagline": "Turn ideas into products, not READMEs.",
                 "accent": accent,
                 "gradientFrom": accent,
                 "gradientTo": "#22d3ee",
             },
             "hero": {
-                "headline": f"{name}: built by developers, loved by users",
-                "subheadline": "The fastest way to turn a great idea into something the world can use. Open source, free, and ready in minutes.",
-                "cta": "Get started",
+                "headline": "Ship your project with a landing page that converts",
+                "subheadline": "Paste your GitHub URL, get a branded product page with AI-written copy — live in seconds.",
+                "cta": "Try it free",
             },
-            "problem": "Great projects are everywhere, but most never get the presentation they deserve.",
-            "solution": "This project fixes that with a focused, fast, and genuinely useful tool — no signup walls, no fluff.",
+            "problem": "You built something great, but no one can figure out what it does or how to use it from your GitHub page alone.",
+            "solution": "This turns your repository into a real product page — the kind that gets users, not just stars.",
             "features": [
-                {"title": "Lightning fast", "blurb": "Optimized from day one. Instant feedback, zero bloat.", "iconKey": "zap"},
-                {"title": "Open source", "blurb": "MIT licensed and community-driven. Your data stays yours.", "iconKey": "code"},
-                {"title": "Extensible", "blurb": "Clean APIs and clear docs make it trivial to build on.", "iconKey": "box"},
-                {"title": "Built for developers", "blurb": "CLI-friendly, scriptable, and easy to self-host.", "iconKey": "terminal"},
+                {"title": "Go live in seconds", "blurb": "Paste a URL, pick a theme, and your page is ready. No design skills needed.", "iconKey": "zap"},
+                {"title": "AI writes your copy", "blurb": "Hero, features, FAQ — all generated from your actual codebase, not generic templates.", "iconKey": "spark"},
+                {"title": "Looks like a million dollars", "blurb": "Premium themes with glass cards, smooth scroll, and dark mode. Your project deserves this.", "iconKey": "box"},
+                {"title": "One-click deploy", "blurb": "Export or deploy instantly. Shareable link in under a minute.", "iconKey": "rocket"},
             ],
             "install": {
-                "heading": "Get started in seconds",
+                "heading": "Get started in 3 steps",
                 "commands": ["npm install", "npm run dev"],
-                "snippet": "import your_project from 'your-project'\n\n// ready to go\nyour_project.start()",
+                "snippet": "1. Paste your GitHub URL\n2. Pick a theme\n3. Share your new landing page",
             },
-            "sections": ["stats", "roadmap"],
+            "sections": ["stats"],
             "footer": {
                 "license": "MIT",
                 "links": [
@@ -133,9 +133,9 @@ class MockProvider:
                 ],
             },
             "seo": {
-                "title": f"{name} — ship faster",
-                "description": f"{name} is an open-source project that makes developers more productive.",
-                "keywords": ["open source", "developer tools", name],
+                "title": f"{name} — launch faster",
+                "description": f"{name}: turn your GitHub project into a landing page that users actually want to click.",
+                "keywords": ["landing page", "developer tools", "product page", name],
             },
         }
         return json.dumps(sample, indent=2)
