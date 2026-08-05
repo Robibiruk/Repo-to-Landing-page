@@ -5,7 +5,6 @@ import {
   Monitor,
   Moon,
   Rocket,
-  Sparkles,
   Sun,
 } from "lucide-react"
 
@@ -37,7 +36,7 @@ const FEATURES = [
 ]
 
 const TRUSTED_BY = [
-  { name: "OpenSource", icon: Sparkles },
+  { name: "OpenSource", icon: Rocket },
   { name: "HackathonPro", icon: Rocket },
   { name: "API Builders", icon: LayoutGrid },
   { name: "DevTools Inc", icon: Brain },
@@ -142,7 +141,7 @@ export default function App() {
       {/* ——— NAV ——— */}
       <nav className="glass-nav fixed top-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 items-center justify-between gap-4 rounded-full px-5 py-3 shadow-lg shadow-primary/5">
         <div className="flex items-center gap-2 font-semibold">
-          <Sparkles className="size-5 text-primary" />
+          <img src="/favicon/icon.svg" alt="" className="size-10" />
           RepoPages
         </div>
         <div className="flex items-center gap-2">
@@ -292,7 +291,7 @@ export default function App() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 font-semibold">
-              <Sparkles className="size-5 text-primary" />
+              <img src="/favicon/icon.svg" alt="" className="size-10" />
               RepoPages
             </div>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
