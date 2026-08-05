@@ -61,4 +61,6 @@ frontend/src/         React app: api client, types, App + components
 | `OPENROUTER_API_KEY` | Required unless `LLM_PROVIDER=mock` |
 | `OPENROUTER_MODEL` | Default `nvidia/nemotron-3-super-120b-a12b:free` (free tier). Swap for a paid model anytime. |
 | `OPENROUTER_FALLBACK_MODELS` | Comma-separated free-model fallbacks for 429 rate limits |
+| `QUALITY_GATE` | `true` (default) — critic scores copy and drives a targeted rewrite |
+| `MAX_REFINE_ROUNDS` | `1` (default) — bounds refine latency on the free tier |
 | `LLM_PROVIDER` | `openrouter` (default) or `mock` |
