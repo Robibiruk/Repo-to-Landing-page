@@ -2,14 +2,10 @@ import { useEffect, useRef, useState } from "react"
 import {
   Brain,
   LayoutGrid,
-  Monitor,
-  Moon,
   Rocket,
-  Sun,
 } from "lucide-react"
 
 import { generate, getThemes, preview } from "./api"
-import { useTheme } from "./components/ThemeProvider"
 import { ActionBar } from "./components/ActionBar"
 import Lightfall from "./components/Lightfall"
 import { PipelineSteps } from "./components/PipelineSteps"
@@ -50,7 +46,6 @@ const FOOTER_LINKS = [
 ]
 
 export default function App() {
-  const { theme: colorScheme, set: setColorScheme } = useTheme()
   const [themes, setThemes] = useState<ThemeInfo[]>([])
   const [step, setStep] = useState<PipelineStep>("idle")
   const [error, setError] = useState<string | null>(null)
@@ -129,12 +124,6 @@ export default function App() {
     setResult((prev) => (prev ? { ...prev, html, content } : prev))
   }
 
-  const cycleTheme = () => {
-    const next = colorScheme === "light" ? "dark" : colorScheme === "dark" ? ("system" as const) : "light" as const
-    setColorScheme(next)
-  }
-  const ThemeIcon = colorScheme === "dark" ? Moon : colorScheme === "system" ? Monitor : Sun
-
   const busy = step === "analyzing" || step === "generating" || step === "rendering"
 
   return (
@@ -146,13 +135,6 @@ export default function App() {
           RepoPages
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={cycleTheme}
-            title={`Theme: ${colorScheme}`}
-            className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            <ThemeIcon className="size-4" />
-          </button>
           <button
             onClick={() => {
               document.getElementById("hero-input")?.scrollIntoView({ behavior: "smooth" })
@@ -168,38 +150,32 @@ export default function App() {
       <section className="relative flex flex-col items-center overflow-hidden px-4 pt-32 pb-20 text-center">
         {/* Gradient backdrop — dark: Lightfall WebGL, light: CSS radial */}
         <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          {colorScheme === "dark" ? (
-            <>
-              <Lightfall
-                className="absolute inset-0"
-                colors={["#A6C8FF", "#5227FF", "#FF9FFC"]}
-                backgroundColor="#020617"
-                speed={0.4}
-                streakCount={2}
-                streakWidth={1.2}
-                streakLength={1.1}
-                glow={0.9}
-                density={0.5}
-                twinkle={0.8}
-                zoom={3}
-                backgroundGlow={0.4}
-                opacity={1}
-                mouseInteraction
-                mouseStrength={0.4}
-                mouseRadius={1.2}
-                mixBlendMode="screen"
-              />
-              {/* Fade mask into next section */}
-              <div
-                className="absolute bottom-0 left-0 right-0 h-40"
-                style={{
-                  background: "linear-gradient(to bottom, transparent 0%, #020617 100%)",
-                }}
-              />
-            </>
-          ) : (
-            <div className="hero-gradient absolute inset-0" />
-          )}
+          <Lightfall
+            className="absolute inset-0"
+            colors={["#A6C8FF", "#5227FF", "#FF9FFC"]}
+            backgroundColor="#020617"
+            speed={0.4}
+            streakCount={2}
+            streakWidth={1.2}
+            streakLength={1.1}
+            glow={0.9}
+            density={0.5}
+            twinkle={0.8}
+            zoom={3}
+            backgroundGlow={0.4}
+            opacity={1}
+            mouseInteraction
+            mouseStrength={0.4}
+            mouseRadius={1.2}
+            mixBlendMode="screen"
+          />
+          {/* Fade mask into next section */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-40"
+            style={{
+              background: "linear-gradient(to bottom, transparent 0%, #020617 100%)",
+            }}
+          />
         </div>
 
         <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl md:text-7xl">
@@ -214,7 +190,7 @@ export default function App() {
 
         {/* Input pill */}
         <div id="hero-input" className="relative mt-10 w-full max-w-2xl">
-          <UrlForm onGenerate={doGenerate} disabled={busy} pill />
+          <UrlForm onGenerate={doGenerate} disabled={busy} />
         </div>
 
         {/* Working steps */}
@@ -347,7 +323,7 @@ export default function App() {
           ))}
         </div>
         <div className="mx-auto mt-12 max-w-5xl border-t border-border/40 pt-8 text-xs text-muted-foreground">
-          © 2024 RepoPages. Built for developers.
+          © 2026 RepoPages. Built for developers.
         </div>
       </footer>
     </div>
