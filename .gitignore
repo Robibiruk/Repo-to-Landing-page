@@ -20,3 +20,7 @@ backend/.env
 .idea/
 .DS_Store
 Thumbs.db
+
+# ideas and mvp
+01-repo-to-landing-page.md
+02-roadmap-and-ideas.md
