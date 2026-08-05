@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Protocol
 
@@ -20,20 +21,44 @@ class LLMProvider(Protocol):
     async def generate(self, system: str, user: str, hint: str = "") -> str: ...
 
 
+class _Retryable(LLMError):
+    """Rate limit (429) or upstream (5xx) failure — worth retrying, possibly on a fallback model."""
+
+
 class OpenRouterProvider:
-    """Default provider. Pointed at OpenRouter; the model is env-configurable."""
+    """Default provider. Free open-source models are the default because they cost nothing;
+    the model + a fallback chain are env-configurable, so a paid model (e.g. Claude) is one
+    env change away. Retries transient 429/5xx with backoff, then moves down the fallback chain.
+    """
 
     name = "openrouter"
 
-    def __init__(self, api_key: str, model: str):
+    def __init__(self, api_key: str, model: str, fallbacks: list[str] | None = None):
         self.api_key = api_key
         self.model = model
+        self.fallbacks = fallbacks or []
 
     async def generate(self, system: str, user: str, hint: str = "") -> str:
         if not self.api_key:
             raise LLMError("OPENROUTER_API_KEY is not set")
+        models = [self.model, *self.fallbacks]
+        last_error: LLMError | None = None
+        for model in models:
+            for attempt in range(3):
+                try:
+                    return await self._call(model, system, user)
+                except _Retryable as exc:
+                    last_error = exc
+                    if attempt < 2:
+                        await asyncio.sleep(2 * (attempt + 1))
+                    else:
+                        break
+            # this model exhausted its retries — try the next fallback
+        raise LLMError(f"All OpenRouter models failed. Last error: {last_error}")
+
+    async def _call(self, model: str, system: str, user: str) -> str:
         payload = {
-            "model": self.model,
+            "model": model,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -45,15 +70,17 @@ class OpenRouterProvider:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-        async with httpx.AsyncClient(timeout=120) as client:
+        async with httpx.AsyncClient(timeout=180) as client:
             resp = await client.post(OPENROUTER_URL, json=payload, headers=headers)
+            if resp.status_code == 429 or resp.status_code >= 500:
+                raise _Retryable(f"OpenRouter {resp.status_code} for {model}: {resp.text[:300]}")
             if resp.status_code >= 400:
-                raise LLMError(f"OpenRouter error {resp.status_code}: {resp.text[:500]}")
+                raise LLMError(f"OpenRouter error {resp.status_code} for {model}: {resp.text[:500]}")
             data = resp.json()
         try:
             return data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
-            raise LLMError(f"Unexpected OpenRouter response: {str(data)[:500]}") from exc
+            raise LLMError(f"Unexpected OpenRouter response from {model}: {str(data)[:500]}") from exc
 
 
 class MockProvider:
@@ -110,4 +137,9 @@ class MockProvider:
 def get_provider() -> LLMProvider:
     if settings.llm_provider == "mock":
         return MockProvider()
-    return OpenRouterProvider(api_key=settings.openrouter_api_key, model=settings.openrouter_model)
+    fallbacks = [m.strip() for m in settings.openrouter_fallback_models.split(",") if m.strip()]
+    return OpenRouterProvider(
+        api_key=settings.openrouter_api_key,
+        model=settings.openrouter_model,
+        fallbacks=fallbacks,
+    )

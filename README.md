@@ -59,5 +59,6 @@ frontend/src/         React app: api client, types, App + components
 | --- | --- |
 | `GITHUB_TOKEN` | GitHub PAT — higher rate limits + private repos |
 | `OPENROUTER_API_KEY` | Required unless `LLM_PROVIDER=mock` |
-| `OPENROUTER_MODEL` | Default `anthropic/claude-sonnet-5` |
+| `OPENROUTER_MODEL` | Default `nvidia/nemotron-3-super-120b-a12b:free` (free tier). Swap for a paid model anytime. |
+| `OPENROUTER_FALLBACK_MODELS` | Comma-separated free-model fallbacks for 429 rate limits |
 | `LLM_PROVIDER` | `openrouter` (default) or `mock` |
