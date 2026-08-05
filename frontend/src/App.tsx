@@ -141,7 +141,7 @@ export default function App() {
       {/* ——— NAV ——— */}
       <nav className="glass-nav fixed top-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 items-center justify-between gap-4 rounded-full px-5 py-3 shadow-lg shadow-primary/5">
         <div className="flex items-center gap-2 font-semibold">
-          <img src="/favicon/icon.svg" alt="" className="size-10" />
+          <img src="/favicon/icons8-web-windows-11-color-96.png" alt="" className="size-10" />
           RepoPages
         </div>
         <div className="flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function App() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 font-semibold">
-              <img src="/favicon/icon.svg" alt="" className="size-10" />
+              <img src="/favicon/icons8-web-windows-11-color-96.png" alt="" className="size-10" />
               RepoPages
             </div>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
