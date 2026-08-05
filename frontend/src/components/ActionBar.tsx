@@ -18,7 +18,15 @@ export function ActionBar({ contentId, theme, html, repoUrl, repoName, onRegener
   const openNewTab = () => {
     const blob = new Blob([html], { type: "text/html" })
     const url = URL.createObjectURL(blob)
-    window.open(url, "_blank")
+    const a = document.createElement("a")
+    a.href = url
+    a.target = "_blank"
+    a.rel = "noopener noreferrer"
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    // Revoke after a delay so the new tab has time to load
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
   return (

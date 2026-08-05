@@ -2,17 +2,20 @@ import { useEffect, useRef, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Brain,
+  Clock,
   Code2,
   LayoutGrid,
   Rocket,
   Shield,
   Sparkles,
+  Trash2,
   Zap,
 } from "lucide-react"
 
 import { generate, getThemes, preview } from "./api"
 import { ActionBar } from "./components/ActionBar"
 import Lightfall from "./components/Lightfall"
+import { deleteProject, getProjects, saveProject, type SavedProject } from "./lib/storage"
 import LogoLoop from "./components/LogoLoop"
 import { PipelineSteps } from "./components/PipelineSteps"
 import { RewritePanel } from "./components/RewritePanel"
@@ -79,10 +82,12 @@ function HomePage() {
   const resultRef = useRef<HTMLDivElement>(null)
 
   const themeRef = useRef(theme)
+  const [recentProjects, setRecentProjects] = useState<SavedProject[]>([])
   useEffect(() => { themeRef.current = theme }, [theme])
 
   useEffect(() => {
     getThemes().then(setThemes).catch(() => setThemes([]))
+    setRecentProjects(getProjects())
   }, [])
 
   useEffect(() => {
@@ -105,6 +110,16 @@ function HomePage() {
       const res = await generate(url, themeRef.current)
       timers.forEach(clearTimeout)
       setResult(res); setTheme(res.theme); setStep("done")
+      saveProject({
+        id: res.content_id,
+        repoUrl: url,
+        repoName: res.repo.full_name,
+        theme: res.theme,
+        html: res.html,
+        content: res.content,
+        timestamp: Date.now(),
+      })
+      setRecentProjects(getProjects())
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
     } catch (e) {
       timers.forEach(clearTimeout)
@@ -123,6 +138,24 @@ function HomePage() {
 
   const handleRewrite = (html: string, content: LandingContent) => {
     setResult((prev) => prev ? { ...prev, html, content } : prev)
+  }
+
+  const restoreProject = (project: SavedProject) => {
+    setResult({
+      content_id: project.id,
+      theme: project.theme,
+      html: project.html,
+      content: project.content,
+      repo: { full_name: project.repoName, url: project.repoUrl, description: "", topics: [], primary_language: "", license: "", stars: 0, forks: 0, contributors: [], homepage: "" },
+    })
+    setTheme(project.theme)
+    setStep("done")
+    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
+  }
+
+  const removeProject = (id: string) => {
+    deleteProject(id)
+    setRecentProjects(getProjects())
   }
 
   const busy = step === "analyzing" || step === "generating" || step === "rendering"
@@ -155,6 +188,26 @@ function HomePage() {
         <div id="hero-input" className="relative mt-10 w-full max-w-2xl">
           <UrlForm onGenerate={doGenerate} disabled={busy} />
         </div>
+
+        {/* Recent Projects */}
+        {recentProjects.length > 0 && !busy && !result && (
+          <div className="fade-up mt-8 w-full max-w-2xl">
+            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent projects</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {recentProjects.slice(0, 5).map((p) => (
+                <div key={p.id} className="group flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-sm text-muted-foreground backdrop-blur-sm transition hover:border-primary/40 hover:text-foreground">
+                  <button type="button" onClick={() => restoreProject(p)} className="flex items-center gap-2">
+                    <Clock className="size-3.5" />
+                    <span className="max-w-[180px] truncate">{p.repoName}</span>
+                  </button>
+                  <button type="button" onClick={() => removeProject(p.id)} className="ml-1 rounded-full p-0.5 text-muted-foreground opacity-0 transition hover:text-destructive group-hover:opacity-100">
+                    <Trash2 className="size-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {busy && <div className="mt-10 fade-up"><PipelineSteps step={step as "analyzing" | "generating" | "rendering"} /></div>}
         {error && <div className="mt-6 w-full max-w-2xl rounded-xl border border-destructive/40 bg-destructive/5 px-5 py-3 text-sm text-destructive">{error}</div>}
