@@ -11,6 +11,7 @@ import {
 import { generate, getThemes, preview } from "./api"
 import { useTheme } from "./components/ThemeProvider"
 import { ActionBar } from "./components/ActionBar"
+import Lightfall from "./components/Lightfall"
 import { PipelineSteps } from "./components/PipelineSteps"
 import { RewritePanel } from "./components/RewritePanel"
 import { ThemePicker } from "./components/ThemePicker"
@@ -165,11 +166,41 @@ export default function App() {
 
       {/* ——— HERO ——— */}
       <section className="relative flex flex-col items-center overflow-hidden px-4 pt-32 pb-20 text-center">
-        {/* Gradient backdrop — dark-mode aware via CSS */}
-        <div
-          className="hero-gradient pointer-events-none absolute inset-0 -z-10"
-          aria-hidden="true"
-        />
+        {/* Gradient backdrop — dark: Lightfall WebGL, light: CSS radial */}
+        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+          {colorScheme === "dark" ? (
+            <>
+              <Lightfall
+                className="absolute inset-0"
+                colors={["#A6C8FF", "#5227FF", "#FF9FFC"]}
+                backgroundColor="#020617"
+                speed={0.4}
+                streakCount={2}
+                streakWidth={1.2}
+                streakLength={1.1}
+                glow={0.9}
+                density={0.5}
+                twinkle={0.8}
+                zoom={3}
+                backgroundGlow={0.4}
+                opacity={1}
+                mouseInteraction
+                mouseStrength={0.4}
+                mouseRadius={1.2}
+                mixBlendMode="screen"
+              />
+              {/* Fade mask into next section */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-40"
+                style={{
+                  background: "linear-gradient(to bottom, transparent 0%, #020617 100%)",
+                }}
+              />
+            </>
+          ) : (
+            <div className="hero-gradient absolute inset-0" />
+          )}
+        </div>
 
         <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl md:text-7xl">
           Turn Any GitHub Repository Into a{" "}
