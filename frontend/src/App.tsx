@@ -1,41 +1,63 @@
 import { useEffect, useRef, useState } from "react"
-import { Code2, Share2, Sparkles } from "lucide-react"
+import {
+  Brain,
+  LayoutGrid,
+  Monitor,
+  Moon,
+  Rocket,
+  Sparkles,
+  Sun,
+} from "lucide-react"
 
 import { generate, getThemes, preview } from "./api"
+import { useTheme } from "./components/ThemeProvider"
 import { ActionBar } from "./components/ActionBar"
 import { PipelineSteps } from "./components/PipelineSteps"
-import { PreviewFrame } from "./components/PreviewFrame"
 import { RewritePanel } from "./components/RewritePanel"
 import { ThemePicker } from "./components/ThemePicker"
 import { UrlForm } from "./components/UrlForm"
-import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card"
 import type { GenerateResponse, LandingContent, PipelineStep, ThemeInfo } from "./types"
 
-const HOW_IT_WORKS = [
+const FEATURES = [
   {
-    icon: Sparkles,
-    title: "Analyze",
-    body: "We read the README, package files, topics, languages, and stats to understand what the repo actually is.",
+    icon: Brain,
+    title: "Repository Intelligence",
+    body: "Our AI reads your codebase, README, and commits to truly understand your product's value proposition.",
   },
   {
-    icon: Code2,
-    title: "Generate",
-    body: "An AI writes the brand, hero, features, and copy — tuned to the repo's language and vibe.",
+    icon: LayoutGrid,
+    title: "Bento Grid Designs",
+    body: "Automatically maps your features into modern, high-converting layouts using premium UI components.",
   },
   {
-    icon: Share2,
-    title: "Share",
-    body: "Preview it, pick a theme, download the static site, and deploy it anywhere for free.",
+    icon: Rocket,
+    title: "One-Click Deploy",
+    body: "Export to Netlify, Vercel, or deploy directly to GitHub with a single click. Fully customizable.",
   },
 ]
 
+const TRUSTED_BY = [
+  { name: "OpenSource", icon: Sparkles },
+  { name: "HackathonPro", icon: Rocket },
+  { name: "API Builders", icon: LayoutGrid },
+  { name: "DevTools Inc", icon: Brain },
+]
+
+const FOOTER_LINKS = [
+  { heading: "Product", links: ["Features", "Gallery", "Templates", "Pricing"] },
+  { heading: "Resources", links: ["Docs", "API", "Blog", "Changelog"] },
+  { heading: "Community", links: ["GitHub", "Discord", "Twitter"] },
+]
+
 export default function App() {
+  const { theme: colorScheme, set: setColorScheme } = useTheme()
   const [themes, setThemes] = useState<ThemeInfo[]>([])
   const [step, setStep] = useState<PipelineStep>("idle")
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GenerateResponse | null>(null)
   const [theme, setTheme] = useState("developer")
   const [refreshing, setRefreshing] = useState(false)
+  const resultRef = useRef<HTMLDivElement>(null)
 
   const themeRef = useRef(theme)
   useEffect(() => {
@@ -47,6 +69,23 @@ export default function App() {
       .then(setThemes)
       .catch(() => setThemes([]))
   }, [])
+
+  // Observe fade-up elements
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>(".fade-up")
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible")
+          }
+        })
+      },
+      { threshold: 0.1 },
+    )
+    els.forEach((el) => obs.observe(el))
+    return () => els.forEach((el) => obs.unobserve(el))
+  }, [step, result])
 
   const doGenerate = async (url: string) => {
     setStep("analyzing")
@@ -62,15 +101,14 @@ export default function App() {
       setResult(res)
       setTheme(res.theme)
       setStep("done")
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 100)
     } catch (e) {
       timers.forEach(clearTimeout)
       setError(e instanceof Error ? e.message : "Something went wrong")
       setStep("error")
     }
-  }
-
-  const handleRewritten = (html: string, content: LandingContent) => {
-    setResult((prev) => (prev ? { ...prev, html, content } : prev))
   }
 
   const handleTheme = async (id: string) => {
@@ -87,97 +125,199 @@ export default function App() {
     }
   }
 
+  const handleRewrite = (html: string, content: LandingContent) => {
+    setResult((prev) => (prev ? { ...prev, html, content } : prev))
+  }
+
+  const cycleTheme = () => {
+    const next = colorScheme === "light" ? "dark" : colorScheme === "dark" ? ("system" as const) : "light" as const
+    setColorScheme(next)
+  }
+  const ThemeIcon = colorScheme === "dark" ? Moon : colorScheme === "system" ? Monitor : Sun
+
   const busy = step === "analyzing" || step === "generating" || step === "rendering"
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-2 font-semibold">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 text-sm font-bold text-white">
-              R
-            </span>
-            RepoPages
-          </div>
-          <span className="hidden text-sm text-muted-foreground sm:block">
-            GitHub repository → landing page
-          </span>
+    <div className="min-h-screen overflow-x-hidden">
+      {/* ——— NAV ——— */}
+      <nav className="glass-nav fixed top-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 items-center justify-between gap-4 rounded-full px-5 py-3 shadow-lg shadow-primary/5">
+        <div className="flex items-center gap-2 font-semibold">
+          <Sparkles className="size-5 text-primary" />
+          RepoPages
         </div>
-      </header>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={cycleTheme}
+            title={`Theme: ${colorScheme}`}
+            className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <ThemeIcon className="size-4" />
+          </button>
+          <button
+            onClick={() => {
+              document.getElementById("hero-input")?.scrollIntoView({ behavior: "smooth" })
+            }}
+            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition hover:bg-primary/90 active:scale-95"
+          >
+            Generate
+          </button>
+        </div>
+      </nav>
 
-      <main className="mx-auto max-w-5xl px-4 py-14">
-        <section className="mb-12 text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Turn any GitHub repo into a landing page
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Paste a repository URL. Get a branded, shareable marketing page in seconds.
-          </p>
-          <div className="mx-auto mt-8 max-w-2xl">
-            <UrlForm onGenerate={doGenerate} disabled={busy} />
-          </div>
-        </section>
+      {/* ——— HERO ——— */}
+      <section className="relative flex flex-col items-center overflow-hidden px-4 pt-32 pb-20 text-center">
+        {/* Gradient backdrop — dark-mode aware via CSS */}
+        <div
+          className="hero-gradient pointer-events-none absolute inset-0 -z-10"
+          aria-hidden="true"
+        />
 
+        <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-6xl md:text-7xl">
+          Turn Any GitHub Repository Into a{" "}
+          <span className="text-gradient">Beautiful Product Website</span>
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground" style={{ lineHeight: 1.6 }}>
+          Paste a GitHub URL. RepoPages understands your project, generates beautiful
+          copy, designs a landing page, and lets you deploy it in minutes.
+        </p>
+
+        {/* Input pill */}
+        <div id="hero-input" className="relative mt-10 w-full max-w-2xl">
+          <UrlForm onGenerate={doGenerate} disabled={busy} pill />
+        </div>
+
+        {/* Working steps */}
         {busy && (
-          <section className="my-10">
-            <PipelineSteps
-              step={step === "analyzing" || step === "generating" || step === "rendering" ? step : "analyzing"}
-            />
-          </section>
+          <div className="mt-10 fade-up">
+            <PipelineSteps step={step as "analyzing" | "generating" | "rendering"} />
+          </div>
         )}
 
         {error && (
-          <section className="my-6">
-            <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-              {error}
+          <div className="mt-6 w-full max-w-2xl rounded-xl border border-destructive/40 bg-destructive/5 px-5 py-3 text-sm text-destructive">
+            {error}
+          </div>
+        )}
+
+        {/* Browser mockup / preview frame */}
+        <div className="fade-up mx-auto mt-12 w-full max-w-4xl rounded-xl border border-border/60 bg-card/80 shadow-2xl shadow-primary/5 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 border-b border-border/40 bg-muted/30 px-4 py-2.5">
+            <span className="size-2.5 rounded-full bg-red-400" />
+            <span className="size-2.5 rounded-full bg-yellow-400" />
+            <span className="size-2.5 rounded-full bg-green-400" />
+          </div>
+          {result ? (
+            <iframe
+              title="Landing page preview"
+              sandbox=""
+              srcDoc={result.html}
+              className="h-[60vh] w-full bg-white"
+            />
+          ) : (
+            <div className="flex h-[60vh] items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5">
+              <p className="text-muted-foreground">
+                Your generated landing page will appear here
+              </p>
             </div>
-          </section>
-        )}
+          )}
+        </div>
+      </section>
 
-        {result && (
-          <section className="space-y-4">
-            <ThemePicker themes={themes} selected={theme} onChange={handleTheme} disabled={refreshing} />
-            <ActionBar
-              contentId={result.content_id}
-              theme={result.theme}
-              html={result.html}
-              repoUrl={result.repo.url}
-              repoName={result.repo.full_name}
-              onRegenerate={() => doGenerate(result.repo.url)}
-              disabled={refreshing}
-            />
-            <PreviewFrame html={result.html} repoName={result.repo.full_name} />
-            <RewritePanel
-              content={result.content}
-              contentId={result.content_id}
-              theme={result.theme}
-              disabled={refreshing}
-              onRewritten={handleRewritten}
-            />
-          </section>
-        )}
+      {/* ——— RESULT CONTROLS (only after generate) ——— */}
+      {result && (
+        <section ref={resultRef} className="mx-auto max-w-5xl space-y-5 px-4 py-12">
+          <ThemePicker themes={themes} selected={theme} onChange={handleTheme} disabled={refreshing} />
+          <ActionBar
+            contentId={result.content_id}
+            theme={result.theme}
+            html={result.html}
+            repoUrl={result.repo.url}
+            repoName={result.repo.full_name}
+            onRegenerate={() => doGenerate(result.repo.url)}
+            disabled={refreshing}
+          />
+          <RewritePanel
+            content={result.content}
+            contentId={result.content_id}
+            theme={result.theme}
+            disabled={refreshing}
+            onRewritten={handleRewrite}
+          />
+        </section>
+      )}
 
-        {!result && !busy && (
-          <section className="mt-24 grid gap-4 sm:grid-cols-3">
-            {HOW_IT_WORKS.map((item) => (
-              <Card key={item.title}>
-                <CardHeader>
-                  <item.icon className="mb-2 size-6 text-primary" />
-                  <CardTitle>{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{item.body}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </section>
-        )}
-      </main>
+      {/* ——— TRUSTED BY ——— */}
+      <section className="fade-up border-y border-border/40 bg-card/50 py-12 text-center">
+        <p className="mb-6 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+          Trusted by hackathons & indie hackers
+        </p>
+        <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-8 text-sm font-semibold text-muted-foreground">
+          {TRUSTED_BY.map((t) => (
+            <div key={t.name} className="flex items-center gap-2 opacity-50 grayscale transition hover:opacity-100 hover:grayscale-0">
+              <t.icon className="size-4" />
+              {t.name}
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <footer className="mt-24 border-t">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-6 text-sm text-muted-foreground">
-          <span>Built with RepoPages</span>
-          <span>Open source publishing — coming soon</span>
+      {/* ——— FEATURES ——— */}
+      <section className="fade-up px-4 py-32 text-center">
+        <h2 className="text-gradient mx-auto mb-4 max-w-md text-3xl font-bold tracking-tight sm:text-4xl">
+          AI-Powered Developer Experience
+        </h2>
+        <p className="mx-auto mb-16 max-w-xl text-lg text-muted-foreground" style={{ lineHeight: 1.6 }}>
+          Everything you need to showcase your project, without writing a single line of marketing copy.
+        </p>
+        <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="glass-card fade-up group rounded-xl px-8 py-10 text-left transition hover:-translate-y-1 hover:shadow-xl"
+            >
+              <div className="mb-5 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <f.icon className="size-6" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">{f.title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ——— FOOTER ——— */}
+      <footer className="border-t border-border/40 bg-card/30 px-4 py-16">
+        <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-2 md:grid-cols-4">
+          {/* Brand */}
+          <div>
+            <div className="flex items-center gap-2 font-semibold">
+              <Sparkles className="size-5 text-primary" />
+              RepoPages
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Turn any open-source project into a polished product page.
+            </p>
+          </div>
+          {FOOTER_LINKS.map((col) => (
+            <div key={col.heading}>
+              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
+                {col.heading}
+              </h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                {col.links.map((link) => (
+                  <li key={link}>
+                    <a href="#" className="transition hover:text-primary">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mx-auto mt-12 max-w-5xl border-t border-border/40 pt-8 text-xs text-muted-foreground">
+          © 2024 RepoPages. Built for developers.
         </div>
       </footer>
     </div>
